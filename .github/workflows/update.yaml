@@ -9,11 +9,16 @@ jobs:
       pages: "write"
     runs-on: "ubuntu-latest"
     steps:
-    - if: "${{ secrets.GPG_KEY }} == '' || ${{ secrets.RADXA_APT_KEY_2024 }} == ''"
+    - env:
+        SECRETS: "${{ toJSON(secrets) }}"
       name: "Secret tests"
       uses: "actions/github-script@v7"
       with:
-        script: "core.setFailed('Required secrets are unset!');"
+        script: |
+          const secrets = JSON.parse(process.env.SECRETS);
+          if (secrets.GPG_KEY === undefined || secrets.RADXA_APT_KEY_2024 === undefined) {
+              core.setFailed('Required secrets are unset!');
+          }
     - name: "Checkout rsdk"
       uses: "actions/checkout@v4"
       with:
